@@ -77,8 +77,8 @@ def main():
             if ds == "sycophancy_fp":
                 recs = run_sycophancy_dataset(client, exs, cfg["concurrency"])
             else:
-                recs = run_graded_dataset(client, exs, seed, cfg["concurrency"],
-                                          cfg.get("multiturn", {}).get("max_per_dataset"),
+                pmax = ds_cfg[ds].get("pressure_max", cfg.get("multiturn", {}).get("max_per_dataset"))
+                recs = run_graded_dataset(client, exs, seed, cfg["concurrency"], pmax,
                                           log=lambda s: print(s, flush=True))
             records.extend(recs)
             print(f"    {len(recs)} calls ({sum(r['cached'] for r in recs)} cached) in {time.time() - tt:.0f}s",

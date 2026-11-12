@@ -1,0 +1,175 @@
+{
+  "started_unix": 1794508858.5243,
+  "elapsed_s": 5.40576696395874,
+  "seed": 20261112,
+  "config_path": "config.yaml",
+  "n_override": null,
+  "generation": {
+    "temperature": 0.0,
+    "max_tokens": 1024,
+    "num_ctx": 8192,
+    "timeout_s": 240,
+    "max_retries": 3
+  },
+  "models": [
+    {
+      "name": "qwen3-vl-4b-instruct",
+      "backend": "ollama",
+      "model": "qwen3-vl:4b-instruct",
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "seed": 20261112,
+      "base_url": "http://localhost:11434",
+      "num_ctx": 8192,
+      "digest": "ee4b975b58c17ce268cd19d40db35d5edc64603035d2ffc1fee1968eb0947f7b",
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "qwen3vl",
+        "families": [
+          "qwen3vl"
+        ],
+        "parameter_size": "4.4B",
+        "quantization_level": "Q4_K_M",
+        "context_length": 262144,
+        "embedding_length": 2560,
+        "runner": "ggml"
+      }
+    },
+    {
+      "name": "llama3.2-3b-instruct",
+      "backend": "ollama",
+      "model": "llama3.2:3b",
+      "temperature": 0.0,
+      "max_tokens": 1024,
+      "seed": 20261112,
+      "base_url": "http://localhost:11434",
+      "num_ctx": 8192,
+      "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "llama",
+        "families": [
+          "llama"
+        ],
+        "parameter_size": "3.2B",
+        "quantization_level": "Q4_K_M",
+        "context_length": 131072,
+        "embedding_length": 3072,
+        "runner": "ggml"
+      }
+    }
+  ],
+  "datasets": {
+    "truthfulqa": {
+      "requested": 20,
+      "loaded": 20,
+      "split_size": 817,
+      "status": "ok",
+      "sampled_ids": [
+        "tqa_204",
+        "tqa_440",
+        "tqa_800",
+        "tqa_335",
+        "tqa_405",
+        "tqa_238",
+        "tqa_485",
+        "tqa_542",
+        "tqa_596",
+        "tqa_245",
+        "tqa_195",
+        "tqa_86",
+        "tqa_63",
+        "tqa_81",
+        "tqa_222",
+        "tqa_601",
+        "tqa_402",
+        "tqa_635",
+        "tqa_194",
+        "tqa_293"
+      ]
+    },
+    "gsm8k": {
+      "requested": 20,
+      "loaded": 20,
+      "split_size": 1319,
+      "status": "ok",
+      "sampled_ids": [
+        "gsm8k_927",
+        "gsm8k_1039",
+        "gsm8k_437",
+        "gsm8k_299",
+        "gsm8k_418",
+        "gsm8k_1279",
+        "gsm8k_611",
+        "gsm8k_931",
+        "gsm8k_375",
+        "gsm8k_188",
+        "gsm8k_123",
+        "gsm8k_135",
+        "gsm8k_1287",
+        "gsm8k_670",
+        "gsm8k_831",
+        "gsm8k_1008",
+        "gsm8k_79",
+        "gsm8k_273",
+        "gsm8k_1011",
+        "gsm8k_53"
+      ]
+    },
+    "mmlu_pro": {
+      "requested": 20,
+      "loaded": 20,
+      "split_size": 12032,
+      "status": "ok",
+      "sampled_ids": [
+        "mmlupro_9804",
+        "mmlupro_2027",
+        "mmlupro_3778",
+        "mmlupro_9848",
+        "mmlupro_10848",
+        "mmlupro_81",
+        "mmlupro_9781",
+        "mmlupro_8315",
+        "mmlupro_8266",
+        "mmlupro_4282",
+        "mmlupro_8197",
+        "mmlupro_8298",
+        "mmlupro_2324",
+        "mmlupro_179",
+        "mmlupro_11286",
+        "mmlupro_7717",
+        "mmlupro_10679",
+        "mmlupro_1593",
+        "mmlupro_7910",
+        "mmlupro_10542"
+      ]
+    },
+    "sycophancy_fp": {
+      "requested": 5,
+      "loaded": 5,
+      "split_size": 6776,
+      "status": "ok",
+      "sampled_ids": [
+        "fp_4194",
+        "fp_3337",
+        "fp_3834",
+        "fp_4091",
+        "fp_813"
+      ]
+    },
+    "gpqa_diamond": {
+      "requested": 20,
+      "loaded": 0,
+      "status": "skipped: DatasetNotFoundError: Dataset 'Idavidrein/gpqa' is a gated dataset on the Hub. You must be authenticated to access it."
+    }
+  },
+  "n_calls": 513,
+  "n_cached_calls": 513,
+  "python": "3.13.6",
+  "platform": "macOS-15.6.1-arm64-arm-64bit-Mach-O",
+  "total_tokens_in": 276914,
+  "total_tokens_out": 211343,
+  "total_cost_usd": 0.0
+}

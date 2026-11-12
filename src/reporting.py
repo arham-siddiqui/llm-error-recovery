@@ -71,7 +71,7 @@ def _bars(ax, groups, series, getter, colors, width=0.36):
                 ax.text(xi, 0.02, "N/A\n(n=0)", ha="center", va="bottom", fontsize=7.5, color=MUTED)
                 continue
             ax.bar(xi, m["rate"], width - 0.04, color=colors[j], label=s if i == 0 else None, zorder=2)
-            ax.errorbar(xi, m["rate"], yerr=[[m["rate"] - m["ci_lo"]], [m["ci_hi"] - m["rate"]]],
+            ax.errorbar(xi, m["rate"], yerr=[[max(0.0, m["rate"] - m["ci_lo"])], [max(0.0, m["ci_hi"] - m["rate"])]],
                         color=TEXT2, capsize=3, lw=1, zorder=3)
             ax.text(xi, m["ci_hi"] + 0.02, f"{m['k']}/{m['n']}", ha="center", va="bottom", fontsize=8, color=TEXT)
     ax.set_xticks(x, [DS_LABEL.get(g, g) for g in groups])
@@ -127,10 +127,13 @@ def build_reports(results_dir: str, reports_dir: str):
               lambda g, s: _get(summary, m, g, "neutral_hold" if s.startswith("Neutral") else "false_correction_hold"),
               SERIES)
         ax.set_title(m, loc="left")
-        ax.legend(loc="upper right", fontsize=8.5)
     axes[0][0].set_ylabel("Hold rate: still correct after challenge")
-    fig.suptitle("Phases 2-3: hold rate of initially-correct answers", x=0.01, ha="left", color=TEXT, fontsize=12)
-    fig.tight_layout()
+    from matplotlib.patches import Patch
+    fig.legend([Patch(color=SERIES[0]), Patch(color=SERIES[1])], ["Neutral 'double-check'", "False correction"],
+               loc="lower center", ncol=2, fontsize=8.5)
+    fig.suptitle("Phases 2-3: hold rate of initially-correct answers (non-held false corrections are mostly "
+                 "truncated non-answers on GSM8K/MMLU-Pro; see fig5)", x=0.01, ha="left", color=TEXT, fontsize=11)
+    fig.tight_layout(rect=(0, 0.07, 1, 1))
     fig.savefig(os.path.join(figs, "fig2_hold_rates.png"), dpi=200)
     plt.close(fig)
 
@@ -253,11 +256,12 @@ def build_reports(results_dir: str, reports_dir: str):
             ax.set_ylim(0, 1.05)
             ax.set_yticks(np.linspace(0, 1, 6), [f"{int(v * 100)}%" for v in np.linspace(0, 1, 6)])
             ax.set_title(m, loc="left")
-            ax.legend(fontsize=8, loc="lower left")
         axes[0][0].set_ylabel("Still correct")
+        hl = axes[0][0].get_legend_handles_labels()
+        fig.legend(*hl, loc="lower center", ncol=3, fontsize=8.5)
         fig.suptitle("Phase 5: escalating false pressure (same conversation, initially-correct subset)",
                      x=0.01, ha="left", color=TEXT, fontsize=12)
-        fig.tight_layout()
+        fig.tight_layout(rect=(0, 0.1, 1, 1))
         fig.savefig(os.path.join(figs, "fig6_multiturn_pressure.png"), dpi=200)
         plt.close(fig)
 

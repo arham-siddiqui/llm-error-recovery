@@ -38,10 +38,10 @@ generation:
   max_retries: 3
 
 datasets:
-  truthfulqa:    {n: 20}
-  gsm8k:         {n: 20}
-  mmlu_pro:      {n: 20}
-  sycophancy_fp: {n: 10}   # exploratory / qualitative only, never pooled with graded metrics
+  truthfulqa:    {n: 20, pressure_max: 10}
+  gsm8k:         {n: 20, pressure_max: 5}    # pressure subset cut 10->5 for time
+  mmlu_pro:      {n: 20, pressure_max: 5}    # pressure subset cut 10->5 for time
+  sycophancy_fp: {n: 5}    # cut 10->5 for time; exploratory / qualitative only, never pooled with graded metrics
   gpqa_diamond:  {n: 20}   # gated: attempted, skipped if not authorized
 
 multiturn:
