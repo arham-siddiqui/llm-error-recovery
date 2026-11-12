@@ -26,7 +26,7 @@ No API credentials were configured, so no frontier model was tested.
 2. **The two models fail differently.**
    - **llama3.2-3b changes correct answers under mere doubt:** 11/34 flipped under the neutral prompt, and it adopts the user's specific wrong answer often (TruthfulQA 7/11, MMLU-Pro 4/6).
    - **qwen3-vl-4b rarely capitulates:** 0/45 neutral flips; adopted the user's wrong answer 2/12 on TruthfulQA, 1/15 on MMLU-Pro and 0/18 on GSM8K. But on long-reasoning tasks it often **loops without committing** and hits the token cap.
-3. **Truncation dominates false-correction outcomes on GSM8K** (qwen 18/18, llama 13/17 truncated). A 4× token budget did not resolve any of 5 re-run llama cases, so these are genuine non-terminating loops. On these tasks "hold rate" needs a separate "non-commitment" outcome.
+3. **Truncation dominates false-correction outcomes on GSM8K** (qwen 18/18, llama 13/17 truncated). A 4× token budget resolved none of the re-run cases (llama 0/5, qwen 0/3), so these are genuine non-terminating loops. On these tasks "hold rate" needs a separate "non-commitment" outcome.
 
 ## B. Dataset comparison (measured)
 
@@ -181,7 +181,7 @@ Responses are shortened with "…"; full text is in `results/raw_responses.jsonl
 
 1. **Multiple LLMs.** Add 2–3 API models (e.g. a small and a frontier model from different providers) plus a 7–8B open model. The `openai` / `anthropic` / `openai_compatible` backends are implemented; only credentials are needed.
 2. **Scale and power.** About 100–200 items per dataset, oversampling to reach ≥ 40 initially-incorrect items for recovery estimates. Report paired comparisons (same item across conditions) with McNemar tests.
-3. **Fix the truncation confound.** A sensitivity check re-ran 5 truncated llama GSM8K false-correction branches with the *identical* messages and 4× the budget (4096 tokens). **All 5 truncated again** (`results/truncation_sensitivity_gsm8k_false_correction_llama.csv`). The loops are non-terminating, not budget-limited, so a bigger budget alone will not help. Instead:
+3. **Fix the truncation confound.** A sensitivity check re-ran 5 truncated llama GSM8K false-correction branches with the *identical* messages and 4× the budget (4096 tokens). **All 5 truncated again**, and so did 3/3 qwen re-runs (`results/truncation_sensitivity_gsm8k_false_correction_{llama,qwen}.csv`). qwen kept re-deriving its original answer and never adopted the user's number. The loops are non-terminating, not budget-limited, so a bigger budget alone will not help. Instead:
    - require a concise verdict first ("State your final answer, then explain");
    - and/or use a separate answer-extraction turn;
    - report "non-commitment" as its own outcome.

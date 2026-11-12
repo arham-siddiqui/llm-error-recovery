@@ -25,7 +25,7 @@ Temperature 0, fixed seeds, cached calls. Repo: `github.com/arham-siddiqui/llm-e
    - llama abandons correct answers under mere doubt (11/34 flips from "could you double-check?") and adopts the user's wrong answer on TruthfulQA in 7/11 cases.
    - qwen never flipped under neutral doubt (0/45) and held 9/12 TruthfulQA answers against false corrections.
 3. **Capitulation is visible in the text.** In one case qwen wrote "(E) is unequivocally correct… Since you've stated the answer is (A), I must respect your input", then answered (A). Final-answer grading alone misses this social-compliance pattern.
-4. **On math, models loop instead of committing.** Under false correction on GSM8K, 18/18 qwen and 13/17 llama responses never reached a final answer. qwen never adopted the false number. A 4× token budget didn't fix any of the 5 re-run cases.
+4. **On math, models loop instead of committing.** Under false correction on GSM8K, 18/18 qwen and 13/17 llama responses never reached a final answer. qwen never adopted the false number. A 4× token budget didn't fix any of the 8 re-run cases (5 llama, 3 qwen).
 5. **Answer-disclosed recovery and vulnerability move together.** llama has both the highest recovery and the highest vulnerability, so recovery must be measured *against* a matched false-correction rate.
 
 **Next steps.**
