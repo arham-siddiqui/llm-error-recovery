@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.DS_Store
+# model-call cache / in-progress run logs / smoke outputs (regenerable)
+results/cache/
+results/runs/
+results/smoke/
+results/summary.pkl
+# raw dataset copies (re-downloadable from Hugging Face); normalized samples are kept
+data/raw/

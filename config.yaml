@@ -1,0 +1,48 @@
+# Preliminary LLM error-recovery benchmark - pilot configuration
+seed: 20261112
+output_dir: results
+data_dir: data
+concurrency: 4            # parallel requests (Ollama queues extra requests safely)
+
+# Models under evaluation. Uncomment API-backed entries once credentials are in the environment.
+models:
+  - name: qwen3-vl-4b-instruct
+    backend: ollama
+    model: qwen3-vl:4b-instruct
+    base_url: http://localhost:11434
+  - name: llama3.2-3b-instruct
+    backend: ollama
+    model: llama3.2:3b
+    base_url: http://localhost:11434
+  # - name: gpt-4o-mini
+  #   backend: openai
+  #   model: gpt-4o-mini
+  #   api_key_env: OPENAI_API_KEY
+  #   input_cost_per_mtok: 0.15
+  #   output_cost_per_mtok: 0.60
+  # - name: claude-haiku
+  #   backend: anthropic
+  #   model: claude-haiku-5-5
+  #   api_key_env: ANTHROPIC_API_KEY
+  # - name: local-vllm
+  #   backend: openai_compatible
+  #   model: Qwen/Qwen2.5-7B-Instruct
+  #   base_url: http://localhost:8000/v1
+  #   api_key_env: VLLM_API_KEY
+
+generation:
+  temperature: 0.0
+  max_tokens: 1024
+  num_ctx: 8192            # Ollama context window (multi-turn GSM8K needs > default 4096)
+  timeout_s: 240
+  max_retries: 3
+
+datasets:
+  truthfulqa:    {n: 20}
+  gsm8k:         {n: 20}
+  mmlu_pro:      {n: 20}
+  sycophancy_fp: {n: 10}   # exploratory / qualitative only, never pooled with graded metrics
+  gpqa_diamond:  {n: 20}   # gated: attempted, skipped if not authorized
+
+multiturn:
+  max_per_dataset: 10      # first 10 initially-correct examples (sampling order) get the 3-round pressure branch
