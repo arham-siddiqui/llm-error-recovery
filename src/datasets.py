@@ -115,8 +115,84 @@ def try_gpqa(n: int, seed: int):
     raise RuntimeError(f"GPQA unexpectedly accessible ({len(ds)} rows) - not used in this pilot")
 
 
+# ---------------------------------------------------------------------------------------------------------
+# v2 (main study) loaders. Option count is fixed within each dataset so the chance floor and the pool of
+# possible wrong answers do not vary across items, and the item set is identical for every model.
+
+TQA_STD_OPTIONS = 4
+
+
+def standardize_tqa_item(choices: list[str], labels: list[int], seed: int, idx: int,
+                         k: int = TQA_STD_OPTIONS) -> tuple[list[str], str, list[int]] | None:
+    """mc1 item -> (k options, gold letter, original indices). Gold + (k-1) seeded random distractors, order
+    shuffled (mc1 lists gold first). None if the item has fewer than k choices."""
+    if len(choices) < k:
+        return None
+    gold_i = labels.index(1)
+    rng = random.Random(f"{seed}-tqa4-{idx}")
+    keep = [gold_i] + rng.sample([j for j in range(len(choices)) if j != gold_i], k - 1)
+    rng.shuffle(keep)
+    return [choices[j] for j in keep], LETTERS[keep.index(gold_i)], keep
+
+
+def load_truthfulqa_mc4(n: int | None, seed: int):
+    mc = load_dataset("leibni/truthful_qa", "multiple_choice", split="validation")
+    gen = load_dataset("leibni/truthful_qa", "generation", split="validation")
+    gen_by_q = {r["question"]: r for r in gen}
+    out, raw = [], []
+    for i in _perm(len(mc), seed, "truthfulqa_mc4"):
+        r = mc[i]
+        choices, labels = r["mc1_targets"]["choices"], r["mc1_targets"]["labels"]
+        assert sum(labels) == 1
+        std = standardize_tqa_item(choices, labels, seed, i)
+        if std is None:
+            continue
+        opts, gold, kept = std
+        g = gen_by_q.get(r["question"], {})
+        out.append(_rec("truthfulqa_mc4", "leibni/truthful_qa:multiple_choice/validation (mc1_targets, 4 options)",
+                        f"tqa_{i}", r["question"], opts, gold, "multiple_choice", {
+                            "original_index": i, "category": g.get("category"), "type": g.get("type"),
+                            "n_options": len(opts), "n_options_original": len(choices), "kept_choice_indices": kept,
+                            "grading_method": "exact match on option letter",
+                            "reliability_notes": "Gold + 3 seeded random mc1 distractors, shuffled. Items with < 4 "
+                                                 "mc1 choices excluded.",
+                            "reference_explanation": None}))
+        raw.append({"index": i, **r})
+        if n is not None and len(out) >= n:
+            break
+    return out, raw, len(mc)
+
+
+def load_mmlu_pro_10(n: int | None, seed: int, per_category: int | None = None):
+    """10-option items only, equal count per category (per_category, or n // 14), in seeded random order."""
+    ds = load_dataset("TIGER-Lab/MMLU-Pro", split="test")
+    cats = sorted(set(ds["category"]))
+    per = per_category or max(1, (n or 0) // len(cats))
+    by_cat = {c: [] for c in cats}
+    for i in _perm(len(ds), seed, "mmlu_pro_10"):
+        r = ds[i]
+        if len(r["options"]) == 10 and len(by_cat[r["category"]]) < per:
+            by_cat[r["category"]].append(i)
+    idx = [i for c in cats for i in by_cat[c]]
+    random.Random(f"{seed}-mmlu_pro_10-order").shuffle(idx)
+    out, raw = [], []
+    for i in idx:
+        r = ds[i]
+        assert LETTERS[r["answer_index"]] == r["answer"]
+        out.append(_rec("mmlu_pro_10", "TIGER-Lab/MMLU-Pro/test (10-option items, stratified by category)",
+                        f"mmlupro_{r['question_id']}", r["question"], list(r["options"]), r["answer"],
+                        "multiple_choice", {
+                            "original_index": i, "question_id": r["question_id"], "category": r["category"],
+                            "src": r["src"], "n_options": 10, "grading_method": "exact match on option letter",
+                            "reliability_notes": "Machine-generated distractors; known label noise in some subjects.",
+                            "reference_explanation": None}))
+        raw.append({"index": i, **r})
+    return out, raw, len(ds)
+
+
 LOADERS = {"truthfulqa": load_truthfulqa, "gsm8k": load_gsm8k, "mmlu_pro": load_mmlu_pro,
-           "sycophancy_fp": load_sycophancy_fp, "gpqa_diamond": try_gpqa}
+           "sycophancy_fp": load_sycophancy_fp, "gpqa_diamond": try_gpqa,
+           "truthfulqa_mc4": load_truthfulqa_mc4, "mmlu_pro_10": load_mmlu_pro_10}
 
 
 def load_all(ds_cfg: dict, seed: int, data_dir: str, n_override: int | None = None):
@@ -127,9 +203,10 @@ def load_all(ds_cfg: dict, seed: int, data_dir: str, n_override: int | None = No
     for name, c in ds_cfg.items():
         if not c.get("enabled", True):
             continue
-        n = n_override if n_override is not None else c["n"]
+        n = n_override if n_override is not None else c.get("n")
+        kw = {"per_category": c["per_category"]} if "per_category" in c and n_override is None else {}
         try:
-            ex, raw, total = LOADERS[name](n, seed)
+            ex, raw, total = LOADERS[name](n, seed, **kw)
         except Exception as e:  # noqa: BLE001
             report[name] = {"requested": n, "loaded": 0, "status": f"skipped: {type(e).__name__}: {str(e)[:160]}"}
             continue

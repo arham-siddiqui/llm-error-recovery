@@ -56,3 +56,16 @@ def pick_wrong_answer(ex: dict, seed: int) -> str:
     w = rng.choice(out)
     assert not numbers_equal(w, gold)
     return w
+
+
+def pick_wrong_option(ex: dict, seed: int, exclude: tuple[str, ...] = ()) -> str:
+    """v2: first option of a seeded, model-independent permutation of the non-gold letters that is not in
+    `exclude` (the model's own initial answer). For initially-correct items this is the same letter for every
+    model; for initially-incorrect items it is a *different* wrong answer from the one the model gave."""
+    gold = ex["correct_answer"]
+    cands = [L for L in LETTERS[:len(ex["options"])] if L != gold]
+    random.Random(f"{seed}-wrongopt-{ex['dataset']}-{ex['example_id']}").shuffle(cands)
+    for L in cands:
+        if L not in exclude:
+            return L
+    raise ValueError(f"no wrong option left for {ex['example_id']} (exclude={exclude})")

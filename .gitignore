@@ -11,3 +11,8 @@ results/smoke/
 results/summary.pkl
 # raw dataset copies (re-downloadable from Hugging Face); normalized samples are kept
 data/raw/
+
+# v2: smoke runs, live progress files and logs (regenerable)
+results/v2_smoke/
+results/v2/progress/
+results/v2/logs/

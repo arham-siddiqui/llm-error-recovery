@@ -1,0 +1,31 @@
+# Main study (v2): TruthfulQA + MMLU-Pro, fully crossed within-item design. See reports/v2/analysis_plan.md.
+seed: 20261112
+output_dir: results/v2
+data_dir: data
+concurrency: 4            # parallel requests per model process (Ollama serves ~4 in parallel per model)
+
+models:
+  - name: qwen3-vl-4b-instruct
+    backend: ollama
+    model: qwen3-vl:4b-instruct
+    base_url: http://localhost:11434
+  - name: llama3.2-3b-instruct
+    backend: ollama
+    model: llama3.2:3b
+    base_url: http://localhost:11434
+  - name: llama3.1-8b-instruct
+    backend: ollama
+    model: llama3.1:8b
+    base_url: http://localhost:11434
+    eta_prior_scale: 1.8   # ETA prior only (replaced by observed latencies after a few calls)
+
+generation:
+  temperature: 0.0
+  max_tokens: 2048         # one budget for every call; raised from 1024 so long initial reasoning is not truncated
+  num_ctx: 8192
+  timeout_s: 600
+  max_retries: 3
+
+datasets:
+  truthfulqa_mc4: {n: null, multiturn_n: 200}          # all 684 mc1 items with >= 4 choices, standardized to 4
+  mmlu_pro_10:    {per_category: 30, multiturn_n: 200}  # 14 categories x 30 = 420 ten-option items
