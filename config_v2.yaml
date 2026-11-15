@@ -9,6 +9,7 @@ models:
     backend: ollama
     model: qwen3-vl:4b-instruct
     base_url: http://localhost:11434
+    eta_prior_scale: 1.5   # ETA only: ~1.3x slower tok/s than llama3.2-3b and more verbose reasoning
   - name: llama3.2-3b-instruct
     backend: ollama
     model: llama3.2:3b
@@ -17,7 +18,7 @@ models:
     backend: ollama
     model: llama3.1:8b
     base_url: http://localhost:11434
-    eta_prior_scale: 1.8   # ETA prior only (replaced by observed latencies after a few calls)
+    eta_prior_scale: 2.0   # ETA only (never affects outputs): ~2x slower than llama3.2-3b
 
 generation:
   temperature: 0.0

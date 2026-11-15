@@ -25,27 +25,27 @@ for m in order:
     if os.path.exists(p):
         snaps[m] = json.load(open(p))
 now = time.time()
-# wall seconds per call per unit of model scale, from models with real progress
-rates = [s["elapsed_s"] / s["done_calls"] / scale[m] for m, s in snaps.items()
-         if s["done_calls"] > 50 and s["cached_calls"] < s["done_calls"] / 2]
-sec_per_call = sum(rates) / len(rates) if rates else None
-total_eta, lines, exp_calls = 0.0, [], None
+# Queued models: projected total duration of the most advanced started model, scaled by eta_prior_scale ratio.
+ref = None
+for m in order:
+    s = snaps.get(m)
+    if s and s["done_calls"] > 50 and s["cached_calls"] < s["done_calls"] / 2:
+        ref = (m, s["elapsed_s"] + (s["eta_s"] if s["status"] != "done" else 0.0))
+total_eta, lines = 0.0, []
 for m in order:
     s = snaps.get(m)
     if s and s["status"] == "done":
         lines.append(f"  {m:24s} done      {s['done_calls']} calls in {fmt_dur(s['elapsed_s'])}")
-        exp_calls = s["expected_calls"]
     elif s:
         stale = now - s["updated"]
         eta = max(0.0, s["eta_s"] - stale)
         total_eta += eta
-        exp_calls = s["expected_calls"]
         lines.append(f"  {m:24s} {s['status']:9s} {s['done_calls']}/{s['expected_calls']} ({s['pct']:.1f}%)"
                      f", ETA {fmt_dur(eta)}" + (f"  [no update for {fmt_dur(stale)}]" if stale > 300 else ""))
     else:
-        est = sec_per_call * scale[m] * exp_calls if sec_per_call and exp_calls else None
+        est = ref[1] * scale[m] / scale[ref[0]] if ref else None
         total_eta += est or 0
-        lines.append(f"  {m:24s} queued    est. {fmt_dur(est) if est else '?'}")
+        lines.append(f"  {m:24s} queued    est. {fmt_dur(est) if est else '?'} (scaled from {ref[0] if ref else '-'})")
 print(f"[{time.strftime('%a %H:%M')}] overall ETA {fmt_dur(total_eta)} -> finishes ~"
       f"{time.strftime('%a %H:%M', time.localtime(now + total_eta))}")
 print("\n".join(lines))

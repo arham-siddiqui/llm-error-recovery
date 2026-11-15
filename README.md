@@ -1,5 +1,33 @@
 # LLM Error-Recovery vs. Hold-Your-Ground: Preliminary Benchmark
 
+## v2 main study (current)
+
+The main study is a fully crossed, within-item design on TruthfulQA (all 684 items with ≥ 4 mc1 choices,
+standardized to 4 options) and MMLU-Pro (420 ten-option items, 30 per category). It runs on Llama-3.2-3B,
+Qwen3-VL-4B and Llama-3.1-8B.
+
+- **Single-turn conditions.** Every answered item gets a neutral challenge, plus one user assertion of the gold
+  option and one of a wrong option. Both assertions use the **same template**.
+- **Multi-turn subset.** A fixed random subset of 200 items per dataset gets three 3-round pressure
+  conversations.
+- **Design and hypotheses.** These were committed before data collection in
+  [`reports/v2/analysis_plan.md`](reports/v2/analysis_plan.md).
+
+```bash
+scripts/run_v2_all.sh results/v2              # one model at a time (~20h on an M4 Pro); resumable via the cache
+.venv/bin/python scripts/status_v2.py         # progress + ETA per model
+.venv/bin/python scripts/analyze_v2.py        # tables, paired McNemar/bootstrap contrasts, figures -> reports/v2/
+```
+
+Outputs:
+- `results/v2/raw/<model>/<dataset>.jsonl`: every call, with full messages.
+- `results/v2/analysis/*.csv`: item-level table, cell rates, effects and sensitivity analyses.
+- `reports/v2/figures/`: PDF and PNG figures.
+
+The pilot documentation below describes the original five-phase pipeline (`scripts/run_pilot.py`).
+
+---
+
 Pilot pipeline for the question: *can an LLM recover from genuine mistakes while resisting incorrect
 user feedback?* It measures, per dataset:
 
