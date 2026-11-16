@@ -26,11 +26,15 @@ for m in order:
         snaps[m] = json.load(open(p))
 now = time.time()
 # Queued models: projected total duration of the most advanced started model, scaled by eta_prior_scale ratio.
+# A finished model (actual duration) is preferred over a running one (projected duration).
 ref = None
 for m in order:
     s = snaps.get(m)
     if s and s["done_calls"] > 50 and s["cached_calls"] < s["done_calls"] / 2:
-        ref = (m, s["elapsed_s"] + (s["eta_s"] if s["status"] != "done" else 0.0))
+        if s["status"] == "done":
+            ref = (m, s["elapsed_s"])
+            break
+        ref = ref or (m, s["elapsed_s"] + s["eta_s"])
 total_eta, lines = 0.0, []
 for m in order:
     s = snaps.get(m)
