@@ -118,6 +118,15 @@ HYPOTHESES = [
      "neutral_correct", "assert_gold_correct", False),
 ]
 
+# POST HOC (added after seeing interim data; not in analysis_plan.md). Escalating R2 and constant R1 send the
+# identical user message (prompts.PRESSURE_ESCALATING[1] == PRESSURE_CONSTANT[0]); they differ only in whether a
+# milder push (and the model's reply to it) came first. This isolates the conversation-history effect that H5 mixes
+# with escalation.
+EXPLORATORY = [
+    ("E1", "Same message as first push vs. after a milder push: P(correct)", "correct_mt",
+     "mt_constant_wrong_r1_correct", "mt_escalating_wrong_r2_correct", False),
+]
+
 
 def _population(w: pd.DataFrame, pop: str) -> pd.DataFrame:
     grp, _, mt = pop.partition("_")
@@ -128,7 +137,7 @@ def _population(w: pd.DataFrame, pop: str) -> pd.DataFrame:
 
 
 def compute_effects(items: pd.DataFrame, drop_unparseable: bool = False, common_items: bool = False,
-                    by_paraphrase: bool = False) -> pd.DataFrame:
+                    by_paraphrase: bool = False, hypotheses: list | None = None) -> pd.DataFrame:
     rng = np.random.default_rng(BOOT_SEED)
     w = items.copy()
     w["neutral_choseW"] = _specific_wrong(w, "neutral")
@@ -140,7 +149,7 @@ def compute_effects(items: pd.DataFrame, drop_unparseable: bool = False, common_
     rows = []
     groups = ["model_name", "dataset"] + (["paraphrase"] if by_paraphrase else [])
     for key, g in w.groupby(groups):
-        for hid, desc, pop, ca, cb, primary in HYPOTHESES:
+        for hid, desc, pop, ca, cb, primary in (hypotheses or HYPOTHESES):
             sub = _population(g, pop)
             if drop_unparseable:
                 ua = ca.replace("_correct", "_unparseable").replace("_adopted_offered", "_unparseable")

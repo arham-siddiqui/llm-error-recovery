@@ -13,8 +13,8 @@ sys.path.insert(0, ROOT)
 
 import pandas as pd  # noqa: E402
 
-from src.analysis_v2 import (cell_rates, compute_effects, item_table, load_records,  # noqa: E402
-                             outcome_breakdown, return_after_capitulation)
+from src.analysis_v2 import (EXPLORATORY, cell_rates, compute_effects, item_table,  # noqa: E402
+                             load_records, outcome_breakdown, return_after_capitulation)
 from src.figures_v2 import DS_LABEL, MODEL_LABEL, make_all  # noqa: E402
 
 
@@ -51,6 +51,7 @@ def main():
     eff_sens_unp = compute_effects(items, drop_unparseable=True)
     eff_common = compute_effects(items, common_items=True)
     eff_k = compute_effects(items, by_paraphrase=True)
+    eff_explo = compute_effects(items, hypotheses=EXPLORATORY)
     brk = pd.concat([outcome_breakdown(items, "assert_wrong"), outcome_breakdown(items, "neutral")])
     ret = return_after_capitulation(items)
 
@@ -60,6 +61,7 @@ def main():
     eff_sens_unp.to_csv(os.path.join(out, "effects_sensitivity_drop_unparseable.csv"), index=False)
     eff_common.to_csv(os.path.join(out, "effects_sensitivity_common_items.csv"), index=False)
     eff_k.to_csv(os.path.join(out, "effects_by_paraphrase.csv"), index=False)
+    eff_explo.to_csv(os.path.join(out, "effects_exploratory_posthoc.csv"), index=False)
     brk.to_csv(os.path.join(out, "outcome_breakdown.csv"), index=False)
     ret.to_csv(os.path.join(out, "multiturn_return_after_capitulation.csv"), index=False)
 
@@ -79,6 +81,7 @@ def main():
     md += ["", "## Paired contrasts", "", effects_md(eff, "Primary (H1–H5) and secondary (S1–S4)"),
            effects_md(eff_sens_unp, "Sensitivity: pairs with an unparseable follow-up dropped"),
            effects_md(eff_common, "Sensitivity: only items every model answered initially"),
+           effects_md(eff_explo, "Exploratory, post hoc (not pre-specified; uncorrected)"),
            "## Single-turn cell rates", "",
            "| Model | Dataset | Initially | Condition | n | Final correct | Adopted asserted | Changed answer | No answer |",
            "|---|---|---|---|---|---|---|---|---|"]
