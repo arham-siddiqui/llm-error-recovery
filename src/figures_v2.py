@@ -130,7 +130,7 @@ def fig_discrimination(eff: pd.DataFrame, out_dir: str):
     """Dumbbell: P(adopt asserted option | true) vs. P(adopt | false) on the same initially-incorrect items."""
     e = eff[eff.hypothesis == "H2"]
     dss, models = _datasets(e), _models(e)
-    fig, axes = plt.subplots(1, len(dss), figsize=(3.6 * len(dss), 0.55 * len(models) + 1.3), sharey=True,
+    fig, axes = plt.subplots(1, len(dss), figsize=(3.4 * len(dss), 0.85 * len(models) + 1.3), sharey=True,
                              squeeze=False)
     for ax, ds in zip(axes[0], dss):
         for yi, m in enumerate(models):
@@ -139,16 +139,17 @@ def fig_discrimination(eff: pd.DataFrame, out_dir: str):
                 continue
             r = r.iloc[0]
             y = len(models) - 1 - yi
-            for p, k, col in ((r.rate_a, r.k_a, ORANGE), (r.rate_b, r.k_b, BLUE)):
+            ya, yb = y + 0.09, y - 0.09  # small vertical offset so coincident rates stay visible
+            for p, k, col, yy in ((r.rate_a, r.k_a, ORANGE, ya), (r.rate_b, r.k_b, BLUE, yb)):
                 lo, hi = wilson(int(k), int(r.n))[1:]
-                ax.plot([lo, hi], [y, y], color=col, lw=1.0, alpha=0.6, zorder=2)
-            ax.plot([r.rate_a, r.rate_b], [y, y], color=AXIS, lw=2, zorder=1)
-            ax.scatter([r.rate_a], [y], s=36, color=ORANGE, zorder=3, edgecolor="white", linewidth=1.2,
+                ax.plot([lo, hi], [yy, yy], color=col, lw=1.0, alpha=0.7, zorder=2)
+            ax.plot([r.rate_a, r.rate_b], [ya, yb], color=AXIS, lw=1.5, zorder=1)
+            ax.scatter([r.rate_a], [ya], s=36, color=ORANGE, zorder=3, edgecolor="white", linewidth=1.2,
                        label="User asserts a wrong option" if yi == 0 else None)
-            ax.scatter([r.rate_b], [y], s=36, color=BLUE, zorder=3, edgecolor="white", linewidth=1.2,
+            ax.scatter([r.rate_b], [yb], s=36, color=BLUE, zorder=3, edgecolor="white", linewidth=1.2,
                        label="User asserts the correct option" if yi == 0 else None)
-            ax.text(1.02, y, f"Δ {r['diff']:+.0%} [{r.ci_lo:+.0%}, {r.ci_hi:+.0%}]  n={int(r.n)}",
-                    va="center", fontsize=7.5, color=TEXT, transform=ax.get_yaxis_transform())
+            ax.text(0.5, y - 0.33, f"Δ {r['diff']:+.0%} [{r.ci_lo:+.0%}, {r.ci_hi:+.0%}], n = {int(r.n)}",
+                    ha="center", va="center", fontsize=7.5, color=TEXT2, transform=ax.get_yaxis_transform())
         ax.set_yticks(range(len(models)), [MODEL_LABEL.get(m, m) for m in reversed(models)])
         ax.set_xlim(0, 1)
         ax.set_xticks(np.linspace(0, 1, 6), [f"{int(t * 100)}%" for t in np.linspace(0, 1, 6)])
@@ -156,9 +157,11 @@ def fig_discrimination(eff: pd.DataFrame, out_dir: str):
         ax.grid(axis="y", visible=False)
         ax.set_ylim(-0.6, len(models) - 0.4)
         ax.set_title(DS_LABEL.get(ds, ds))
-        ax.set_xlabel("Adopts the option the user asserted\n(initially incorrect items)")
-    axes[0][0].legend(loc="upper center", bbox_to_anchor=(1.0, -0.42), ncol=2, fontsize=8)
-    fig.subplots_adjust(wspace=0.75)
+
+    fig.supxlabel("Share of initially incorrect items that adopt the option the user asserted", fontsize=8.5,
+                  color=TEXT2, y=0.06)
+    axes[0][0].legend(loc="upper center", bbox_to_anchor=(1.1, -0.32), ncol=2, fontsize=8)
+    fig.subplots_adjust(wspace=0.2, bottom=0.25)
     _save(fig, out_dir, "fig3_discrimination")
 
 
@@ -255,7 +258,7 @@ def fig_paraphrase(eff_k: pd.DataFrame, eff: pd.DataFrame, out_dir: str):
             ("H2", "H2: discrimination\nP(adopt | true) − P(adopt | false)")]
     dss, models = _datasets(eff), _models(eff)
     rows = [(ds, m) for ds in dss for m in models]
-    fig, axes = plt.subplots(1, 2, figsize=(7.2, 0.62 * len(rows) + 1.2), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 0.75 * len(rows) + 1.2), sharey=True)
     for ax, (h, title) in zip(axes, hyps):
         for yi, (ds, m) in enumerate(rows):
             y0 = len(rows) - 1 - yi
@@ -271,10 +274,10 @@ def fig_paraphrase(eff_k: pd.DataFrame, eff: pd.DataFrame, out_dir: str):
                 if rk.empty or rk.iloc[0].n == 0:
                     continue
                 rk = rk.iloc[0]
-                yk = y0 + 0.3 - 0.15 * k
+                yk = y0 + 0.45 - 0.15 * k
                 ax.plot([rk.ci_lo, rk.ci_hi], [yk, yk], color=MUTED, lw=0.8)
-                ax.scatter([rk["diff"]], [yk], s=10, color=MUTED, zorder=3,
-                           label="Each paraphrase template" if (yi == 0 and k == 0) else None)
+                ax.scatter([rk["diff"]], [yk], s=14, color=MUTED, marker="os^"[int(k)], zorder=3,
+                           label=f"Template {int(k) + 1}" if yi == 0 else None)
         ax.axvline(0, color=AXIS, lw=0.9)
         ax.set_title(title, fontsize=8.5)
         ax.grid(axis="x")
@@ -282,7 +285,7 @@ def fig_paraphrase(eff_k: pd.DataFrame, eff: pd.DataFrame, out_dir: str):
         ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:+.0%}"))
     axes[0].set_yticks(range(len(rows)), [f"{MODEL_LABEL.get(m, m)} · {DS_LABEL.get(ds, ds).split(' (')[0]}"
                                           for ds, m in reversed(rows)], fontsize=7.5)
-    axes[0].legend(loc="upper center", bbox_to_anchor=(1.05, -0.08), ncol=2, fontsize=7.5)
+    axes[0].legend(loc="upper center", bbox_to_anchor=(1.05, -0.08), ncol=4, fontsize=7.5)
     _save(fig, out_dir, "fig6_paraphrase_robustness")
 
 
