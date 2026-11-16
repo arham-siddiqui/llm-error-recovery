@@ -82,7 +82,7 @@ def fig_initial_accuracy(cells: pd.DataFrame, out_dir: str):
         _pct_axis(ax, 1.12)
         chance = 0.25 if "truthfulqa" in ds else 0.10
         ax.axhline(chance, color=MUTED, lw=0.8, zorder=1)
-        ax.text(len(models) - 0.5, chance + 0.01, "chance", fontsize=7, color=MUTED, ha="right", va="bottom")
+        ax.text(-0.45, chance + 0.01, "chance", fontsize=7, color=MUTED, ha="left", va="bottom")
     axes[0][0].set_ylabel("Initial accuracy (answered items)")
     _save(fig, out_dir, "fig1_initial_accuracy")
 
